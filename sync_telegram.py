@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 from pathlib import Path
 
@@ -30,6 +31,15 @@ print(f"Получено обновлений: {len(updates)}")
 
 Path('images').mkdir(exist_ok=True)
 
+# Загружаем существующие подписи
+captions_file = Path('images/captions.json')
+captions = {}
+if captions_file.exists():
+    try:
+        captions = json.loads(captions_file.read_text(encoding='utf-8'))
+    except Exception:
+        captions = {}
+
 new_last_id = last_update_id
 saved_count = 0
 
@@ -60,7 +70,9 @@ for update in updates:
     if not file_id:
         continue
 
-    target = Path(f'images/review_{msg_id}.{ext}')
+    filename = f"review_{msg_id}.{ext}"
+    target = Path(f'images/{filename}')
+
     if target.exists():
         print(f"Уже существует: {target}")
         continue
@@ -80,8 +92,16 @@ for update in updates:
         target.write_bytes(img_response.content)
         print(f"Сохранено: {target} ({len(img_response.content)//1024} КБ)")
         saved_count += 1
+
+        # Сохраняем подпись (текст под фото/видео), если есть
+        caption = msg.get('caption', '').strip()
+        if caption:
+            captions[filename] = caption
     else:
         print(f"Ошибка загрузки: {img_response.status_code}")
+
+# Сохраняем файл подписей
+captions_file.write_text(json.dumps(captions, ensure_ascii=False, indent=2), encoding='utf-8')
 
 last_id_file.write_text(str(new_last_id))
 print(f"Готово. Новых файлов: {saved_count}. Последний ID: {new_last_id}")
