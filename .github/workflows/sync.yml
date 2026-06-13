@@ -29,11 +29,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add images/ last_update_id.txt
-          git reset HEAD .github/
+          git restore --staged .
+          git add images/
+          git add last_update_id.txt
           if git diff --staged --quiet; then
             echo "Новых файлов нет"
           else
-            git commit -m "Add new reviews from Telegram [skip ci]"
+            git commit -m "Add reviews [skip ci]"
             git push origin main
           fi
