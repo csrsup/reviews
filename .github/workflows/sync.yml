@@ -1,0 +1,40 @@
+name: Sync Telegram Reviews
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Sync photos from Telegram
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        run: python3 sync_telegram.py
+
+      - name: Commit new files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git reset --soft origin/main
+          git add images/ last_update_id.txt
+          if git diff --staged --quiet; then
+            echo "Новых файлов нет"
+          else
+            git commit -m "Add new reviews from Telegram [skip ci]"
+            git push origin main
+          fi
