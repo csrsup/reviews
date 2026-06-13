@@ -29,8 +29,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A images/ last_update_id.txt
-          git status
+          git add images/ last_update_id.txt
+          git reset HEAD .github/
           if git diff --staged --quiet; then
             echo "Новых файлов нет"
           else
