@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install dependencies
         run: pip install requests
@@ -29,9 +27,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git restore --staged .
-          git add images/
-          git add last_update_id.txt
+          git add images/ last_update_id.txt
           if git diff --staged --quiet; then
             echo "Новых файлов нет"
           else
